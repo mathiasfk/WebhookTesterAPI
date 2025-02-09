@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using WebhookTesterAPI.DTOs;
 using WebhookTesterAPI.Models;
 
 namespace WebhookTesterAPI.Storage
@@ -14,10 +15,11 @@ namespace WebhookTesterAPI.Storage
                 .FirstOrDefaultAsync(w => w.Id == id);
         }
 
-        public async Task<List<Webhook>> GetByTokenAsync(string token)
+        public async Task<List<WebhookDTO>> GetByTokenAsync(string token)
         {
             return await _context.Webhooks
                 .Where(w => w.OwnerToken == token)
+                .Select(w => new WebhookDTO(w.Id, w.Url))
                 .ToListAsync();
         }
 

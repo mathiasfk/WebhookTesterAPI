@@ -1,4 +1,5 @@
-﻿using WebhookTesterAPI.Models;
+﻿using WebhookTesterAPI.DTOs;
+using WebhookTesterAPI.Models;
 using WebhookTesterAPI.Storage;
 
 namespace WebhookTesterAPI
@@ -52,10 +53,12 @@ namespace WebhookTesterAPI
                 return Results.Unauthorized();
 
             var webhook = await _repository.GetByIdAsync(id);
-            if (webhook == null || webhook.OwnerToken != token)
+            if (webhook == null)
                 return Results.NotFound();
 
-            return Results.Ok(new { id = webhook.Id, requests = webhook.Requests });
+            var requests = webhook.Requests.Select(r => new WebhookRequestDTO(r.Id, r.HttpMethod, r.Headers, r.Body, r.ReceivedAt));
+
+            return Results.Ok(requests);
         }
 
     }

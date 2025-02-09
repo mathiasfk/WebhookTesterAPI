@@ -44,7 +44,7 @@ namespace WebhookTesterAPI
             });
 
 
-            app.MapGet("/webhooks/{id:guid}", async (WebhookService service, HttpContext context, Guid id) =>
+            app.MapGet("/webhooks/{id:guid}/requests", async (WebhookService service, HttpContext context, Guid id) =>
                 await service.GetWebhookRequests(context, id))
             .WithOpenApi(operation => new(operation)
             {
@@ -53,7 +53,8 @@ namespace WebhookTesterAPI
                 Responses =
             {
                 ["200"] = new() { Description = "Webhook list returned with success." },
-                ["401"] = new() { Description = "Absent or invalid token." }
+                ["401"] = new() { Description = "Absent or invalid token." },
+                ["404"] = new() { Description = "Webhook not found" }
             }
             });
 
