@@ -42,6 +42,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapWebhookEndpoints();
+app.MapEndpoints();
 
 app.Run();
