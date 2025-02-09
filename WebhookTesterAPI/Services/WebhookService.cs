@@ -41,6 +41,27 @@ namespace WebhookTesterAPI.Services
         }
 
         /// <summary>
+        /// Delete a webhook and all requests associated with it.
+        /// </summary>
+        /// <param name="context">The HTTP context containing request headers.</param>
+        /// <param name="id">The ID of the webhook.</param>
+        /// <returns></returns>
+        public async Task<IResult> DeleteWebhook(HttpContext context, Guid id)
+        {
+            var guidToken = GetTokenFromContext(context);
+            if (guidToken == null)
+                return Results.Unauthorized();
+
+            var webhook = await _repository.GetByIdAsync(id);
+            if (webhook == null || webhook.OwnerToken != guidToken.Value)
+                return Results.NotFound();
+
+            await _repository.RemoveAsync(webhook);
+
+            return Results.Ok(new { message = "Webhook deleted" });
+        }
+
+        /// <summary>
         /// Returns all requests received by the specified webhook.
         /// </summary>
         /// <param name="context">The HTTP context containing request headers.</param>

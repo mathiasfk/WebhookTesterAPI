@@ -43,6 +43,20 @@ namespace WebhookTesterAPI
                 }
             });
 
+            app.MapDelete("/webhooks/{id:guid}", async (WebhookService service, HttpContext context, Guid id) =>
+                await service.DeleteWebhook(context, id))
+            .WithOpenApi(operation => new(operation)
+            {
+                Summary = "Delete a webhook",
+                Description = "Delete a webhook endpoint and all requests associated with it.",
+                Responses =
+                {
+                    ["200"] = new() { Description = "Webhook deleted with success." },
+                    ["401"] = new() { Description = "Absent or invalid token." },
+                    ["404"] = new() { Description = "Webhook not found" }
+                }
+            });
+
 
             app.MapGet("/webhooks/{id:guid}/requests", async (WebhookService service, HttpContext context, Guid id) =>
                 await service.GetWebhookRequests(context, id))
