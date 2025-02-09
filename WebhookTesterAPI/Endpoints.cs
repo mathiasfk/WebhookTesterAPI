@@ -51,16 +51,16 @@ namespace WebhookTesterAPI
                 Summary = "Get webhook requests",
                 Description = "Retrieves all requests previously received by a specific webhook.",
                 Responses =
-            {
-                ["200"] = new() { Description = "Webhook list returned with success." },
-                ["401"] = new() { Description = "Absent or invalid token." },
-                ["404"] = new() { Description = "Webhook not found" }
-            }
+                {
+                    ["200"] = new() { Description = "Webhook list returned with success." },
+                    ["401"] = new() { Description = "Absent or invalid token." },
+                    ["404"] = new() { Description = "Webhook not found" }
+                }
             });
 
-            app.MapMethods("/{id}", ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD"], (HttpContext context, string id) =>
+            app.MapMethods("/{id}", ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD"], async (WebhookService service, HttpContext context, string id) =>
             {
-                return Results.Ok(new { message = "Received", id });
+                return await service.SaveRequestAsync(context, id);
             });
         }
     }

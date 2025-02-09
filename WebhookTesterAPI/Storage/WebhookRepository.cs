@@ -34,6 +34,12 @@ namespace WebhookTesterAPI.Storage
             _context.Webhooks.Remove(webhook);
             await _context.SaveChangesAsync();
         }
+
+        public async Task AddRequestAsync(WebhookRequest request)
+        {
+            _context.WebhookRequests.Add(request);
+            await _context.SaveChangesAsync();
+        }
     }
 
 

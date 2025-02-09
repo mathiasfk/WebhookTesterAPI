@@ -2,7 +2,7 @@
 using WebhookTesterAPI.Models;
 using WebhookTesterAPI.Storage;
 
-namespace WebhookTesterAPI
+namespace WebhookTesterAPI.Services
 {
     public class WebhookService(WebhookRepository repository)
     {
@@ -59,6 +59,30 @@ namespace WebhookTesterAPI
             var requests = webhook.Requests.Select(r => new WebhookRequestDTO(r.Id, r.HttpMethod, r.Headers, r.Body, r.ReceivedAt));
 
             return Results.Ok(requests);
+        }
+
+        public async Task<IResult> SaveRequestAsync(HttpContext context, string id)
+        {
+            var token = context.Request.Headers.Authorization.ToString();
+            if (string.IsNullOrEmpty(token))
+                return Results.Unauthorized();
+
+            var webhook = await _repository.GetByIdAsync(Guid.Parse(id));
+            if (webhook == null || webhook.OwnerToken != token)
+                return Results.NotFound();
+
+            var request = new WebhookRequest
+            {
+                WebhookId = webhook.Id,
+                HttpMethod = context.Request.Method,
+                Headers = string.Join("\n", context.Request.Headers.Select(h => $"{h.Key}: {h.Value}")),
+                Body = await new StreamReader(context.Request.Body).ReadToEndAsync(),
+                ReceivedAt = DateTime.UtcNow
+            };
+
+            await _repository.AddRequestAsync(request);
+
+            return Results.Ok(new { message = "Request saved", id = request.Id });
         }
 
     }
