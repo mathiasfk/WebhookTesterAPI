@@ -15,7 +15,7 @@ namespace WebhookTesterAPI.Storage
                 .FirstOrDefaultAsync(w => w.Id == id);
         }
 
-        public async Task<List<WebhookDTO>> GetByTokenAsync(string token)
+        public async Task<List<WebhookDTO>> GetByTokenAsync(Guid token)
         {
             return await _context.Webhooks
                 .Where(w => w.OwnerToken == token)

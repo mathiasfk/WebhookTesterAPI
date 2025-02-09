@@ -15,11 +15,11 @@ namespace WebhookTesterAPI.Services
         /// <returns>A JSON object with the webhook ID.</returns>
         public async Task<IResult> CreateWebhook(HttpContext context)
         {
-            var token = context.Request.Headers.Authorization.ToString();
-            if (string.IsNullOrEmpty(token))
+            var guidToken = GetTokenFromContext(context);
+            if (guidToken == null)
                 return Results.Unauthorized();
 
-            var webhook = new Webhook { OwnerToken = token };
+            var webhook = new Webhook { OwnerToken = guidToken.Value };
             await _repository.AddAsync(webhook);
 
             return Results.Ok(new { id = webhook.Id });
@@ -32,11 +32,11 @@ namespace WebhookTesterAPI.Services
         /// <returns>A list of all webhook IDs</returns>
         public async Task<IResult> ListWebhooks(HttpContext context)
         {
-            var token = context.Request.Headers.Authorization.ToString();
-            if (string.IsNullOrEmpty(token))
+            var guidToken = GetTokenFromContext(context);
+            if (guidToken == null)
                 return Results.Unauthorized();
 
-            var webhooks = await _repository.GetByTokenAsync(token);
+            var webhooks = await _repository.GetByTokenAsync(guidToken.Value);
             return Results.Ok(webhooks);
         }
 
@@ -48,12 +48,12 @@ namespace WebhookTesterAPI.Services
         /// <returns>A list of requests</returns>
         public async Task<IResult> GetWebhookRequests(HttpContext context, Guid id)
         {
-            var token = context.Request.Headers.Authorization.ToString();
-            if (string.IsNullOrEmpty(token))
+            var guidToken = GetTokenFromContext(context);
+            if (guidToken == null)
                 return Results.Unauthorized();
 
             var webhook = await _repository.GetByIdAsync(id);
-            if (webhook == null)
+            if (webhook == null || webhook.OwnerToken != guidToken.Value)
                 return Results.NotFound();
 
             var requests = webhook.Requests.Select(r => new WebhookRequestDTO(r.Id, r.HttpMethod, r.Headers, r.Body, r.ReceivedAt));
@@ -61,14 +61,16 @@ namespace WebhookTesterAPI.Services
             return Results.Ok(requests);
         }
 
-        public async Task<IResult> SaveRequestAsync(HttpContext context, string id)
+        /// <summary>
+        /// Save a HTTP request.
+        /// </summary>
+        /// <param name="context">The HTTP context containing request headers.</param>
+        /// <param name="id">The ID of the webhook to get requests for.</param>
+        /// <returns>An OK message</returns>
+        public async Task<IResult> SaveRequestAsync(HttpContext context, Guid id)
         {
-            var token = context.Request.Headers.Authorization.ToString();
-            if (string.IsNullOrEmpty(token))
-                return Results.Unauthorized();
-
-            var webhook = await _repository.GetByIdAsync(Guid.Parse(id));
-            if (webhook == null || webhook.OwnerToken != token)
+            var webhook = await _repository.GetByIdAsync(id);
+            if (webhook == null)
                 return Results.NotFound();
 
             var request = new WebhookRequest
@@ -83,6 +85,15 @@ namespace WebhookTesterAPI.Services
             await _repository.AddRequestAsync(request);
 
             return Results.Ok(new { message = "Request saved", id = request.Id });
+        }
+
+        private static Guid? GetTokenFromContext(HttpContext context)
+        {
+            var token = context.Request.Headers.Authorization.ToString();
+            if (string.IsNullOrEmpty(token) || !Guid.TryParse(token, out Guid guidToken))
+                return null;
+
+            return guidToken;
         }
 
     }

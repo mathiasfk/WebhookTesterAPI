@@ -58,7 +58,7 @@ namespace WebhookTesterAPI
                 }
             });
 
-            app.MapMethods("/{id}", ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD"], async (WebhookService service, HttpContext context, string id) =>
+            app.MapMethods("/{id:guid}", ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD"], async (WebhookService service, HttpContext context, Guid id) =>
             {
                 return await service.SaveRequestAsync(context, id);
             });
