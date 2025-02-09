@@ -1,4 +1,4 @@
-﻿namespace WebhookTesterAPI
+﻿namespace WebhookTesterAPI.Services
 {
     public class TokenService
     {

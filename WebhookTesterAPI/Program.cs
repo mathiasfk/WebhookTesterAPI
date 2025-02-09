@@ -1,9 +1,19 @@
+using Microsoft.EntityFrameworkCore;
 using WebhookTesterAPI;
+using WebhookTesterAPI.Services;
+using WebhookTesterAPI.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// Database setup
+builder.Services.AddDbContext<WebhookDbContext>(options =>
+    options.UseSqlite("Data Source=webhooks.db"));
+
+// Dependency injection
+builder.Services.AddScoped<WebhookRepository>();
+builder.Services.AddScoped<WebhookService>();
+
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -32,16 +42,11 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
-
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
 app.UseHttpsRedirection();
-
 app.MapEndpoints();
-
 app.Run();

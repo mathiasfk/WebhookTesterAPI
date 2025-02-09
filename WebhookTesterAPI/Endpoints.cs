@@ -1,4 +1,6 @@
-﻿namespace WebhookTesterAPI
+﻿using WebhookTesterAPI.Services;
+
+namespace WebhookTesterAPI
 {
     public static class Endpoints
     {
@@ -15,7 +17,8 @@
             }
             });
 
-            app.MapPost("/webhooks", WebhookService.CreateWebhook)
+            app.MapPost("/webhooks", async (WebhookService service, HttpContext context) => 
+                await service.CreateWebhook(context))
             .WithOpenApi(operation => new(operation)
             {
                 Summary = "Creates a new webhook",
@@ -27,7 +30,8 @@
                 }
             });
 
-            app.MapGet("/webhooks", WebhookService.ListWebhooks)
+            app.MapGet("/webhooks", async (WebhookService service, HttpContext context) => 
+                await service.ListWebhooks(context))
             .WithOpenApi(operation => new(operation)
             {
                 Summary = "List all webhooks",
@@ -40,7 +44,8 @@
             });
 
 
-            app.MapGet("/webhooks/{id}", WebhookService.ListWebhookRequests)
+            app.MapGet("/webhooks/{id:guid}", async (WebhookService service, HttpContext context, Guid id) =>
+                await service.GetWebhookRequests(context, id))
             .WithOpenApi(operation => new(operation)
             {
                 Summary = "Get webhook requests",
