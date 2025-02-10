@@ -72,6 +72,20 @@ namespace WebhookTesterAPI
                 }
             });
 
+            app.MapGet("/webhooks/{id:guid}/stream", async (WebhookService service, HttpContext context, Guid id) =>
+                await service.StreamWebhookRequests(context, id))
+            .WithOpenApi(operation => new(operation)
+            {
+                Summary = "Stream webhook requests",
+                Description = "Opens a stream of requests received by a specific webhook.",
+                Responses =
+                {
+                    ["200"] = new() { Description = "Stream opened with success." },
+                    ["401"] = new() { Description = "Absent or invalid token." },
+                    ["404"] = new() { Description = "Webhook not found" }
+                }
+            });
+
             app.MapMethods("/{id:guid}", ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD"], async (WebhookService service, HttpContext context, Guid id) =>
             {
                 return await service.SaveRequestAsync(context, id);

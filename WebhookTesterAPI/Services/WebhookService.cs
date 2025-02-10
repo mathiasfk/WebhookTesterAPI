@@ -1,4 +1,7 @@
-﻿using WebhookTesterAPI.DTOs;
+﻿using System.Collections.Concurrent;
+using System.Text.Json;
+using System.Threading.Channels;
+using WebhookTesterAPI.DTOs;
 using WebhookTesterAPI.Models;
 using WebhookTesterAPI.Storage;
 
@@ -7,6 +10,8 @@ namespace WebhookTesterAPI.Services
     public class WebhookService(WebhookRepository repository)
     {
         private readonly WebhookRepository _repository = repository;
+        private static readonly ConcurrentDictionary<Guid, Channel<WebhookRequestDTO>> _channels = new();
+
 
         /// <summary>
         /// Creates a new webhook.
@@ -105,7 +110,31 @@ namespace WebhookTesterAPI.Services
 
             await _repository.AddRequestAsync(request);
 
+            var requestDto = new WebhookRequestDTO(request.Id, request.HttpMethod, request.Headers, request.Body, request.ReceivedAt);
+            await NotifySubscribersAsync(id, requestDto);
+
             return Results.Ok(new { message = "Request saved", id = request.Id });
+        }
+
+        /// <summary>
+        /// Opens a stream from all requests received by the specified webhook.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public async Task StreamWebhookRequests(HttpContext context, Guid id)
+        {
+            context.Response.Headers.Append("Content-Type", "text/event-stream");
+
+            var channel = _channels.GetOrAdd(id, _ => Channel.CreateUnbounded<WebhookRequestDTO>());
+            var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
+            await foreach (var request in channel.Reader.ReadAllAsync(context.RequestAborted))
+            {
+                var json = JsonSerializer.Serialize(request, options);
+                await context.Response.WriteAsync($"data: {json}\n\n");
+                await context.Response.Body.FlushAsync();
+            }
         }
 
         private static Guid? GetTokenFromContext(HttpContext context)
@@ -115,6 +144,14 @@ namespace WebhookTesterAPI.Services
                 return null;
 
             return guidToken;
+        }
+
+        private static async Task NotifySubscribersAsync(Guid id, WebhookRequestDTO request)
+        {
+            if (_channels.TryGetValue(id, out var channel))
+            {
+                await channel.Writer.WriteAsync(request);
+            }
         }
 
     }

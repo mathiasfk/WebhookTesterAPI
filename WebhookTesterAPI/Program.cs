@@ -41,6 +41,19 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+// CORS
+const string corsPolicy = "sample-client";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(corsPolicy,
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
+
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
@@ -48,5 +61,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 app.UseHttpsRedirection();
+app.UseCors(corsPolicy);
 app.MapEndpoints();
 app.Run();
