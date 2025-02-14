@@ -4,9 +4,11 @@ using WebhookTesterAPI.Models;
 
 namespace WebhookTesterAPI.Storage
 {
-    public class WebhookRepository(WebhookDbContext context)
+    public class WebhookRepository(WebhookDbContext context, IConfiguration configuration)
     {
         private readonly WebhookDbContext _context = context;
+        private readonly IConfiguration _config = configuration;
+        private string BaseUrl => _config["BaseUrl"] ?? "http://localhost";
 
         public async Task<Webhook?> GetByIdAsync(Guid id)
         {
@@ -19,7 +21,7 @@ namespace WebhookTesterAPI.Storage
         {
             return await _context.Webhooks
                 .Where(w => w.OwnerToken == token)
-                .Select(w => new WebhookDTO(w.Id, w.Url))
+                .Select(w => new WebhookDTO(w.Id, $"{BaseUrl}/{w.Id}"))
                 .ToListAsync();
         }
 
