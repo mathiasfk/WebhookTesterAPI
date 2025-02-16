@@ -7,10 +7,12 @@ using WebhookTesterAPI.Storage;
 
 namespace WebhookTesterAPI.Services
 {
-    public class WebhookService(WebhookRepository repository)
+    public class WebhookService(WebhookRepository repository, IConfiguration configuration)
     {
         private readonly WebhookRepository _repository = repository;
         private static readonly ConcurrentDictionary<Guid, Channel<WebhookRequestDTO>> _channels = new();
+        private readonly IConfiguration _config = configuration;
+        private string BaseUrl => _config["BaseUrl"] ?? "http://localhost";
 
 
         /// <summary>
@@ -27,7 +29,7 @@ namespace WebhookTesterAPI.Services
             var webhook = new Webhook { OwnerToken = guidToken.Value };
             await _repository.AddAsync(webhook);
 
-            return Results.Ok(new { id = webhook.Id });
+            return Results.Ok(new WebhookDTO(webhook.Id, $"{BaseUrl}/{webhook.Id}"));
         }
 
         /// <summary>
@@ -42,7 +44,8 @@ namespace WebhookTesterAPI.Services
                 return Results.Unauthorized();
 
             var webhooks = await _repository.GetByTokenAsync(guidToken.Value);
-            return Results.Ok(webhooks);
+            var webhooksDTOs = webhooks.Select(w => new WebhookDTO(w.Id, $"{BaseUrl}/{w.Id}"));
+            return Results.Ok(webhooksDTOs);
         }
 
         /// <summary>
