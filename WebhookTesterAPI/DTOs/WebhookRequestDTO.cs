@@ -5,6 +5,6 @@
         string HttpMethod,
         string Headers,
         string Body,
-        DateTime ReceivedAt
+        DateTimeOffset ReceivedAt
     );
 }

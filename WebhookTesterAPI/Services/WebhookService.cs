@@ -108,7 +108,7 @@ namespace WebhookTesterAPI.Services
                 HttpMethod = context.Request.Method,
                 Headers = string.Join("\n", context.Request.Headers.Select(h => $"{h.Key}: {h.Value}")),
                 Body = await new StreamReader(context.Request.Body).ReadToEndAsync(),
-                ReceivedAt = DateTime.UtcNow
+                ReceivedAt = DateTimeOffset.UtcNow
             };
 
             await _repository.AddRequestAsync(request);
