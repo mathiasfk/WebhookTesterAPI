@@ -3,7 +3,7 @@
     public record WebhookRequestDTO(
         Guid Id,
         string HttpMethod,
-        string Headers,
+        Dictionary<string, string[]> Headers,
         string Body,
         DateTimeOffset ReceivedAt
     );

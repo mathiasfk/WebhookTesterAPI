@@ -102,11 +102,12 @@ namespace WebhookTesterAPI.Services
             if (webhook == null)
                 return Results.NotFound();
 
+            var headers = context.Request.Headers.ToDictionary(h => h.Key, h => h.Value.ToArray());
             var request = new WebhookRequest
             {
                 WebhookId = webhook.Id,
                 HttpMethod = context.Request.Method,
-                Headers = string.Join("\n", context.Request.Headers.Select(h => $"{h.Key}: {h.Value}")),
+                Headers = headers,
                 Body = await new StreamReader(context.Request.Body).ReadToEndAsync(),
                 ReceivedAt = DateTimeOffset.UtcNow
             };
