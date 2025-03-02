@@ -1,6 +1,6 @@
-﻿using WebhookTesterAPI.Services;
+﻿using Deprecated.WebhookTesterAPI.Services;
 
-namespace WebhookTesterAPI
+namespace Deprecated.WebhookTesterAPI
 {
     public static class Endpoints
     {
@@ -17,7 +17,7 @@ namespace WebhookTesterAPI
             }
             });
 
-            app.MapPost("/webhooks", async (WebhookService service, HttpContext context) => 
+            app.MapPost("/webhooks", async (WebhookService service, HttpContext context) =>
                 await service.CreateWebhook(context))
             .WithOpenApi(operation => new(operation)
             {
@@ -30,7 +30,7 @@ namespace WebhookTesterAPI
                 }
             });
 
-            app.MapGet("/webhooks", async (WebhookService service, HttpContext context) => 
+            app.MapGet("/webhooks", async (WebhookService service, HttpContext context) =>
                 await service.ListWebhooks(context))
             .WithOpenApi(operation => new(operation)
             {

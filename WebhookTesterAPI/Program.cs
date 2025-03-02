@@ -1,7 +1,7 @@
+using Deprecated.WebhookTesterAPI;
+using Deprecated.WebhookTesterAPI.Services;
+using Deprecated.WebhookTesterAPI.Storage;
 using Microsoft.EntityFrameworkCore;
-using WebhookTesterAPI;
-using WebhookTesterAPI.Services;
-using WebhookTesterAPI.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
 

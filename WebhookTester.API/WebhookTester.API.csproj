@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WebhookTester.Core\WebhookTester.Core.csproj" />
+    <ProjectReference Include="..\WebhookTester.Infrastructure\WebhookTester.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

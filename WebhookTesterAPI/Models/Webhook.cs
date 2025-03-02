@@ -1,4 +1,4 @@
-﻿namespace WebhookTesterAPI.Models
+﻿namespace Deprecated.WebhookTesterAPI.Models
 {
     public class Webhook
     {

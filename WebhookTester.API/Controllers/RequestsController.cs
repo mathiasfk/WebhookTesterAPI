@@ -8,15 +8,13 @@ namespace WebhookTester.API.Controllers
     [Route("/")]
     public class RequestsController(IWebhookService service) : ControllerBase
     {
-        private readonly IWebhookService _service = service;
-
         [HttpGet("{webhookId:guid}")]
         [HttpPost("{webhookId:guid}")]
         [HttpPut("{webhookId:guid}")]
         [HttpDelete("{webhookId:guid}")]
         [HttpPatch("{webhookId:guid}")]
         [HttpHead("{webhookId:guid}")]
-        [ProducesResponseType(typeof(Webhook), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> HandleRequest(Guid webhookId)
         {
@@ -30,7 +28,7 @@ namespace WebhookTester.API.Controllers
                 ReceivedAt = DateTimeOffset.UtcNow
             };
 
-            var saved = await _service.HandleRequestAsync(webhookId, request);
+            var saved = await service.HandleRequestAsync(webhookId, request);
             return saved ? Ok(new { message = "Request saved" }) : NotFound();
         }
 

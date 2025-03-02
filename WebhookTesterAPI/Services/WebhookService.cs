@@ -1,11 +1,11 @@
-﻿using System.Collections.Concurrent;
+﻿using Deprecated.WebhookTesterAPI.DTOs;
+using Deprecated.WebhookTesterAPI.Models;
+using Deprecated.WebhookTesterAPI.Storage;
+using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Threading.Channels;
-using WebhookTesterAPI.DTOs;
-using WebhookTesterAPI.Models;
-using WebhookTesterAPI.Storage;
 
-namespace WebhookTesterAPI.Services
+namespace Deprecated.WebhookTesterAPI.Services
 {
     public class WebhookService(WebhookRepository repository, IConfiguration configuration)
     {

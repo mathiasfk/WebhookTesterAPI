@@ -3,26 +3,38 @@ using WebhookTester.Core.Interfaces;
 
 namespace WebhookTester.Core.Services
 {
-    public class WebhooksService() : IWebhookService
+    public class WebhooksService(IWebhooksRepository repository) : IWebhookService
     {
-        public Task<Webhook> CreateWebhook()
+        public async Task<Webhook> CreateWebhook(Guid token)
         {
-            throw new NotImplementedException();
+            var webhook = new Webhook { OwnerToken = token };
+            await repository.AddAsync(webhook);
+
+            return webhook;
         }
 
-        public Task<IEnumerable<Webhook>> ListWebhooks()
+        public async Task<IEnumerable<Webhook>> ListWebhooks(Guid token)
         {
-            throw new NotImplementedException();
+            return await repository.GetByTokenAsync(token);
         }
 
-        public Task<bool> DeleteWebhook(Guid webhookId)
+        public async Task<bool> DeleteWebhook(Guid token, Guid webhookId)
         {
-            throw new NotImplementedException();
+            var webhook = await repository.GetByIdAsync(token);
+            if (webhook == null || webhook.OwnerToken != webhookId)
+                return false;
+
+            await repository.RemoveAsync(webhook);
+            return true;
         }
 
-        public Task<IEnumerable<WebhookRequest>> GetRequests(Guid webhookId)
+        public async Task<IEnumerable<WebhookRequest>> GetRequests(Guid token, Guid webhookId)
         {
-            throw new NotImplementedException();
+            var webhook = await repository.GetByIdAsync(webhookId);
+            if (webhook == null || webhook.OwnerToken != token)
+                return [];
+
+            return webhook.Requests;
         }
 
         public Task<bool> HandleRequestAsync(Guid webhookId, WebhookRequest request)
