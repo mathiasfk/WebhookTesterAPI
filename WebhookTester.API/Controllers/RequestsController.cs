@@ -4,10 +4,19 @@ using WebhookTester.Core.Interfaces;
 
 namespace WebhookTester.API.Controllers
 {
+    /// <summary>
+    /// Handles requests to a webhook.
+    /// </summary>
+    /// <param name="service"></param>
     [ApiController]
     [Route("/")]
     public class RequestsController(IWebhookService service) : ControllerBase
     {
+        /// <summary>
+        /// Stores this request and broadcasts it to the subscribed clients.
+        /// </summary>
+        /// <param name="webhookId"></param>
+        /// <returns>A success or error message.</returns>
         [HttpGet("{webhookId:guid}")]
         [HttpPost("{webhookId:guid}")]
         [HttpPut("{webhookId:guid}")]

@@ -5,6 +5,12 @@ using static WebhookTester.API.Models.DataTransferObjects;
 
 namespace WebhookTester.API.Controllers
 {
+    /// <summary>
+    /// Handles webhook operations (listing, creating, deleting) and fetching requests from a specific webhook.
+    /// </summary>
+    /// <param name="webhookService"></param>
+    /// <param name="configuration"></param>
+    /// <param name="sseService"></param>
     [ApiController]
     [Route("[controller]")]
     public class WebhooksController(
@@ -14,6 +20,10 @@ namespace WebhookTester.API.Controllers
     {
         private string BaseUrl => configuration["BaseUrl"] ?? "http://localhost";
 
+        /// <summary>
+        /// Create a new webhook
+        /// </summary>
+        /// <returns>The created webhook info</returns>
         [HttpPost()]
         [ProducesResponseType(typeof(WebhookDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -26,6 +36,10 @@ namespace WebhookTester.API.Controllers
             return Ok(dto);
         }
 
+        /// <summary>
+        /// List all webhooks for the authenticated user.
+        /// </summary>
+        /// <returns>A list of webhooks.</returns>
         [HttpGet()]
         [ProducesResponseType(typeof(WebhookDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -38,6 +52,11 @@ namespace WebhookTester.API.Controllers
             return Ok(dtos);
         }
 
+        /// <summary>
+        /// Delete a webhook by ID.
+        /// </summary>
+        /// <param name="id">The ID of the webhook to delete.</param>
+        /// <returns>A success or error message.</returns>
         [HttpDelete("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -50,6 +69,11 @@ namespace WebhookTester.API.Controllers
             return deleted ? Ok(new { message = "Webhook deleted" }) : NotFound();
         }
 
+        /// <summary>
+        /// Get all requests received by a specific webhook.
+        /// </summary>
+        /// <param name="id">The ID of the webhook.</param>
+        /// <returns>A list of requests.</returns>
         [HttpGet("{id:guid}/requests")]
         [ProducesResponseType(typeof(WebhookRequestDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -69,6 +93,10 @@ namespace WebhookTester.API.Controllers
             return Ok(dtos);
         }
 
+        /// <summary>
+        /// Open a stream of requests received by a specific webhook.
+        /// </summary>
+        /// <param name="id">The ID of the webhook.</param>
         [HttpGet("{id:guid}/stream")]
         public async Task OpenRequestsStream(Guid id)
         {
