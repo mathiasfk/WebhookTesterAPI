@@ -3,6 +3,7 @@ using WebhookTester.Core.Interfaces;
 using WebhookTester.Core.Services;
 using WebhookTester.Infrastructure;
 using WebhookTester.Infrastructure.Repositories;
+using WebhookTester.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,7 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IWebhookService, WebhooksService>();
 builder.Services.AddScoped<IWebhooksRepository, WebhooksRepository>();
+builder.Services.AddSingleton<IServerSentEventsService, ServerSentEventsService>();
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();

@@ -3,7 +3,7 @@ using WebhookTester.Core.Interfaces;
 
 namespace WebhookTester.Core.Services
 {
-    public class WebhooksService(IWebhooksRepository repository) : IWebhookService
+    public class WebhooksService(IWebhooksRepository repository, IServerSentEventsService sse) : IWebhookService
     {
         public async Task<Webhook> CreateWebhook(Guid token)
         {
@@ -37,9 +37,17 @@ namespace WebhookTester.Core.Services
             return webhook.Requests;
         }
 
-        public Task<bool> HandleRequestAsync(Guid webhookId, WebhookRequest request)
+        public async Task<bool> HandleRequestAsync(Guid webhookId, WebhookRequest request)
         {
-            throw new NotImplementedException();
+            var webhook = await repository.GetByIdAsync(webhookId);
+            if (webhook == null)
+            {
+                return false;
+            }
+            await repository.AddRequestAsync(request);
+            await sse.WriteToChannelAsync(webhookId, request);
+
+            return true;
         }
     }
 }
