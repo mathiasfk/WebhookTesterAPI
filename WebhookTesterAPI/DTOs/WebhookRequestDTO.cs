@@ -1,4 +1,4 @@
-﻿namespace WebhookTesterAPI.DTOs
+﻿namespace Deprecated.WebhookTesterAPI.DTOs
 {
     public record WebhookRequestDTO(
         Guid Id,

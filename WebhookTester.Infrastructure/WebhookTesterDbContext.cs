@@ -1,9 +1,9 @@
-﻿using Deprecated.WebhookTesterAPI.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using WebhookTester.Core.Entities;
 
-namespace Deprecated.WebhookTesterAPI.Storage
+namespace WebhookTester.Infrastructure
 {
-    public class WebhookDbContext(DbContextOptions<WebhookDbContext> options) : DbContext(options)
+    public class WebhookTesterDbContext(DbContextOptions<WebhookTesterDbContext> options) : DbContext(options)
     {
         public DbSet<Webhook> Webhooks { get; set; } = null!;
         public DbSet<WebhookRequest> WebhookRequests { get; set; } = null!;

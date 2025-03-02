@@ -1,4 +1,4 @@
-﻿namespace WebhookTesterAPI.Services
+﻿namespace Deprecated.WebhookTesterAPI.Services
 {
     public class TokenService
     {

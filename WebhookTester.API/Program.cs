@@ -1,28 +1,41 @@
-using Deprecated.WebhookTesterAPI;
-using Deprecated.WebhookTesterAPI.Services;
-using Deprecated.WebhookTesterAPI.Storage;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
+using WebhookTester.Core.Interfaces;
+using WebhookTester.Core.Services;
+using WebhookTester.Infrastructure;
+using WebhookTester.Infrastructure.Repositories;
+using WebhookTester.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Database setup
-builder.Services.AddDbContext<WebhookDbContext>(options =>
+builder.Services.AddDbContext<WebhookTesterDbContext>(options =>
     options.UseSqlite("Data Source=webhooks.db"));
 
 // Dependency injection
-builder.Services.AddScoped<WebhookRepository>();
-builder.Services.AddScoped<WebhookService>();
+builder.Services.AddControllers();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IWebhookService, WebhooksService>();
+builder.Services.AddScoped<IWebhooksRepository, WebhooksRepository>();
+builder.Services.AddSingleton<IServerSentEventsService, ServerSentEventsService>();
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Version = "v1",
+        Title = "Webhook Tester API",
+        Description = "API to create webhooks and monitor requests to them."
+    });
+
     options.AddSecurityDefinition("ApiKey", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
         Name = "Authorization",
         Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
         In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Description = "Token de autenticação no formato: 'Authorization: {token}'"
+        Description = "Authorization token in the format: 'Authorization: {token}'"
     });
 
     options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
@@ -39,6 +52,10 @@ builder.Services.AddSwaggerGen(options =>
             Array.Empty<string>()
         }
     });
+
+    // using System.Reflection;
+    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
 
 // CORS
@@ -55,12 +72,16 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
 app.UseHttpsRedirection();
 app.UseCors(corsPolicy);
-app.MapEndpoints();
+app.UseAuthorization();
+app.MapControllers();
 app.Run();

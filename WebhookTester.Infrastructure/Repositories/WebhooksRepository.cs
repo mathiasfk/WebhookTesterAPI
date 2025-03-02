@@ -1,11 +1,12 @@
-﻿using Deprecated.WebhookTesterAPI.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using WebhookTester.Core.Entities;
+using WebhookTester.Core.Interfaces;
 
-namespace Deprecated.WebhookTesterAPI.Storage
+namespace WebhookTester.Infrastructure.Repositories
 {
-    public class WebhookRepository(WebhookDbContext context)
+    public class WebhooksRepository(WebhookTesterDbContext context) : IWebhooksRepository
     {
-        private readonly WebhookDbContext _context = context;
+        private readonly WebhookTesterDbContext _context = context;
 
 
         public async Task<Webhook?> GetByIdAsync(Guid id)
@@ -40,6 +41,4 @@ namespace Deprecated.WebhookTesterAPI.Storage
             await _context.SaveChangesAsync();
         }
     }
-
-
 }

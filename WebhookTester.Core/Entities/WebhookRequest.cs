@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
-
-namespace Deprecated.WebhookTesterAPI.Models
+namespace WebhookTester.Core.Entities
 {
     public class WebhookRequest
     {
