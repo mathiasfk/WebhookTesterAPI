@@ -1,0 +1,42 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using WebhookTester.Core.Entities;
+using WebhookTester.Core.Interfaces;
+
+namespace WebhookTester.API.Controllers
+{
+    [ApiController]
+    [Route("/")]
+    public class RequestsController(IWebhookService service) : ControllerBase
+    {
+        private readonly IWebhookService _service = service;
+
+        [HttpGet("{webhookId:guid}")]
+        [HttpPost("{webhookId:guid}")]
+        [HttpPut("{webhookId:guid}")]
+        [HttpDelete("{webhookId:guid}")]
+        [HttpPatch("{webhookId:guid}")]
+        [HttpHead("{webhookId:guid}")]
+        [ProducesResponseType(typeof(Webhook), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> HandleRequest(Guid webhookId)
+        {
+            var headers = GetHeaders();
+            var request = new WebhookRequest
+            {
+                WebhookId = webhookId,
+                HttpMethod = HttpContext.Request.Method,
+                Headers = headers,
+                Body = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync(),
+                ReceivedAt = DateTimeOffset.UtcNow
+            };
+
+            var saved = await _service.HandleRequestAsync(webhookId, request);
+            return saved ? Ok(new { message = "Request saved" }) : NotFound();
+        }
+
+        private Dictionary<string, string?[]> GetHeaders()
+        {
+            return HttpContext.Request.Headers.ToDictionary(h => h.Key, h => h.Value.ToArray());
+        }
+    }
+}
