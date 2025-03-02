@@ -20,8 +20,8 @@ namespace WebhookTester.Core.Services
 
         public async Task<bool> DeleteWebhook(Guid token, Guid webhookId)
         {
-            var webhook = await repository.GetByIdAsync(token);
-            if (webhook == null || webhook.OwnerToken != webhookId)
+            var webhook = await repository.GetByIdAsync(webhookId);
+            if (webhook == null || webhook.OwnerToken != token)
                 return false;
 
             await repository.RemoveAsync(webhook);
