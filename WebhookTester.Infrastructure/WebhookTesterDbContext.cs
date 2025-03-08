@@ -9,6 +9,11 @@ namespace WebhookTester.Infrastructure
         public DbSet<Webhook> Webhooks { get; set; } = null!;
         public DbSet<WebhookRequest> WebhookRequests { get; set; } = null!;
 
+        private readonly JsonSerializerOptions jsonOptions = new()
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Webhook>()
@@ -19,8 +24,8 @@ namespace WebhookTester.Infrastructure
             modelBuilder.Entity<WebhookRequest>()
                 .Property(r => r.Headers)
                 .HasConversion(
-                    h => JsonSerializer.Serialize(h, (JsonSerializerOptions)null),
-                    h=> JsonSerializer.Deserialize<Dictionary<string, string[]>>(h, (JsonSerializerOptions)null) ?? new Dictionary<string, string[]>()
+                    h => JsonSerializer.Serialize(h, jsonOptions),
+                    h=> JsonSerializer.Deserialize<Dictionary<string, string[]>>(h, jsonOptions) ?? new Dictionary<string, string[]>()
                 );
         }
     }
