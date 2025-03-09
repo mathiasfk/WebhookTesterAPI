@@ -31,7 +31,6 @@ namespace WebhookTester.Core.Tests
 
             // Assert
             Assert.IsTrue(result.Success);
-            Assert.IsNotNull(result.Data);
             Assert.AreEqual(token, result.Data.OwnerToken);
             await _repository.Received(1).AddAsync(Arg.Any<Webhook>());
         }
@@ -49,7 +48,6 @@ namespace WebhookTester.Core.Tests
 
             // Assert
             Assert.IsTrue(result.Success);
-            Assert.IsNotNull(result.Data);
             Assert.AreEqual(1, result.Data.Count());
             Assert.AreEqual(token, result.Data.First().OwnerToken);
         }
@@ -67,7 +65,6 @@ namespace WebhookTester.Core.Tests
 
             // Assert
             Assert.IsTrue(result.Success);
-            Assert.IsNotNull(result.Data);
             Assert.AreEqual(0, result.Data.Count());
         }
 
@@ -122,7 +119,6 @@ namespace WebhookTester.Core.Tests
 
             // Assert
             Assert.IsTrue(result.Success);
-            Assert.IsNotNull(result.Data);
             Assert.AreEqual(1, result.Data.Count());
             Assert.AreEqual(webhookId, result.Data.First().WebhookId);
         }
@@ -142,7 +138,6 @@ namespace WebhookTester.Core.Tests
 
             // Assert
             Assert.IsTrue(result.Success);
-            Assert.IsNotNull(result.Data);
             Assert.AreEqual(0, result.Data.Count());
         }
 
