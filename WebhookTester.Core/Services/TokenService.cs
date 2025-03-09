@@ -1,12 +1,13 @@
-﻿using WebhookTester.Core.Interfaces;
+﻿using WebhookTester.Core.Common;
+using WebhookTester.Core.Interfaces;
 
 namespace WebhookTester.Core.Services
 {
     public class TokenService : ITokenService
     {
-        public Guid CreateToken()
+        public OperationResult<Guid> CreateToken()
         {
-            return Guid.NewGuid();
+            return OperationResult<Guid>.SuccessResult(Guid.NewGuid());
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using WebhookTester.Core.Common;
 using WebhookTester.Core.Interfaces;
 using static WebhookTester.API.Models.DataTransferObjects;
 
@@ -31,7 +32,9 @@ namespace WebhookTester.API.Controllers
         {
             var token = GetAndValidateToken();
 
-            var webhook = await webhookService.CreateWebhook(token);
+            var result = await webhookService.CreateWebhook(token);
+            var webhook = result.Data;
+
             var dto = new WebhookDTO(webhook.Id, $"{BaseUrl}/{webhook.Id}");
             return Ok(dto);
         }
@@ -47,7 +50,9 @@ namespace WebhookTester.API.Controllers
         {
             var token = GetAndValidateToken();
 
-            var webhooks = await webhookService.ListWebhooks(token);
+            var result = await webhookService.ListWebhooks(token);
+            var webhooks = result.Data;
+
             var dtos = webhooks.Select(w => new WebhookDTO(w.Id, $"{BaseUrl}/{w.Id}"));
             return Ok(dtos);
         }
@@ -65,8 +70,8 @@ namespace WebhookTester.API.Controllers
         {
             var token = GetAndValidateToken();
 
-            var deleted = await webhookService.DeleteWebhook(token, id);
-            return deleted ? Ok(new { message = "Webhook deleted" }) : NotFound();
+            var result = await webhookService.DeleteWebhook(token, id);
+            return result.Success ? Ok(new { message = "Webhook deleted" }) : NotFound();
         }
 
         /// <summary>
@@ -82,12 +87,12 @@ namespace WebhookTester.API.Controllers
         {
             var token = GetAndValidateToken();
 
-            var requests = await webhookService.GetRequests(token, id);
-            if (!requests.Any())
+            var result = await webhookService.GetRequests(token, id);
+            if (!result.Success && result.Error?.Code == ErrorCode.NotFound)
             {
-                // TODO: Return 404 only when the webhook is not found
                 return NotFound();
             }
+            var requests = result.Data;
             var dtos = requests.Select(r => new WebhookRequestDTO(r.Id, r.HttpMethod, r.Headers, r.Body, r.ReceivedAt));
 
             return Ok(dtos);

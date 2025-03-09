@@ -12,12 +12,14 @@ namespace WebhookTester.Core.Tests
             var tokenService = new TokenService();
 
             // Act
-            var token = tokenService.CreateToken();
-            var token2 = tokenService.CreateToken();
+            var result = tokenService.CreateToken();
+            var result2 = tokenService.CreateToken();
 
             // Assert
-            Assert.AreNotEqual(Guid.Empty, token);
-            Assert.AreNotEqual(token, token2);
+            Assert.IsTrue(result.Success);
+            Assert.IsTrue(result2.Success);
+            Assert.AreNotEqual(Guid.Empty, result.Data);
+            Assert.AreNotEqual(result.Data, result2.Data);
         }
     }
 }
