@@ -22,7 +22,7 @@ namespace WebhookTester.Core.Services
         {
             var webhook = await repository.GetByIdAsync(webhookId);
             if (webhook == null || webhook.OwnerToken != token)
-                return false;
+                return true;
 
             await repository.RemoveAsync(webhook);
             return true;
