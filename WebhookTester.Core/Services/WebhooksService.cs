@@ -22,7 +22,7 @@ namespace WebhookTester.Core.Services
         {
             var webhook = await repository.GetByIdAsync(webhookId);
             if (webhook == null || webhook.OwnerToken != token)
-                return true;
+                return false;
 
             await repository.RemoveAsync(webhook);
             return true;
@@ -41,9 +41,8 @@ namespace WebhookTester.Core.Services
         {
             var webhook = await repository.GetByIdAsync(webhookId);
             if (webhook == null)
-            {
                 return false;
-            }
+
             await repository.AddRequestAsync(request);
             await sse.WriteToChannelAsync(webhookId, request);
 
