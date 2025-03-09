@@ -26,7 +26,7 @@ namespace WebhookTester.API.Controllers
         /// </summary>
         /// <returns>The created webhook info</returns>
         [HttpPost()]
-        [ProducesResponseType(typeof(WebhookDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(WebhookDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Post()
         {
@@ -35,7 +35,7 @@ namespace WebhookTester.API.Controllers
             var result = await webhookService.CreateWebhook(token);
             var webhook = result.Data;
 
-            var dto = new WebhookDTO(webhook.Id, $"{BaseUrl}/{webhook.Id}");
+            var dto = new WebhookDto(webhook.Id, $"{BaseUrl}/{webhook.Id}");
             return Ok(dto);
         }
 
@@ -44,7 +44,7 @@ namespace WebhookTester.API.Controllers
         /// </summary>
         /// <returns>A list of webhooks.</returns>
         [HttpGet()]
-        [ProducesResponseType(typeof(WebhookDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(WebhookDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Get()
         {
@@ -53,7 +53,7 @@ namespace WebhookTester.API.Controllers
             var result = await webhookService.ListWebhooks(token);
             var webhooks = result.Data;
 
-            var dtos = webhooks.Select(w => new WebhookDTO(w.Id, $"{BaseUrl}/{w.Id}"));
+            var dtos = webhooks.Select(w => new WebhookDto(w.Id, $"{BaseUrl}/{w.Id}"));
             return Ok(dtos);
         }
 
@@ -80,7 +80,7 @@ namespace WebhookTester.API.Controllers
         /// <param name="id">The ID of the webhook.</param>
         /// <returns>A list of requests.</returns>
         [HttpGet("{id:guid}/requests")]
-        [ProducesResponseType(typeof(WebhookRequestDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(WebhookRequestDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetRequests(Guid id)
@@ -93,7 +93,7 @@ namespace WebhookTester.API.Controllers
                 return NotFound();
             }
             var requests = result.Data;
-            var dtos = requests.Select(r => new WebhookRequestDTO(r.Id, r.HttpMethod, r.Headers, r.Body, r.ReceivedAt));
+            var dtos = requests.Select(r => new WebhookRequestDto(r.Id, r.HttpMethod, r.Headers, r.Body, r.ReceivedAt));
 
             return Ok(dtos);
         }
@@ -112,7 +112,7 @@ namespace WebhookTester.API.Controllers
 
             await foreach (var request in channel.Reader.ReadAllAsync(HttpContext.RequestAborted))
             {
-                var dto = new WebhookRequestDTO(request.Id, request.HttpMethod, request.Headers, request.Body, request.ReceivedAt);
+                var dto = new WebhookRequestDto(request.Id, request.HttpMethod, request.Headers, request.Body, request.ReceivedAt);
 
                 var json = JsonSerializer.Serialize(dto, options);
                 await HttpContext.Response.WriteAsync($"data: {json}\n\n");
