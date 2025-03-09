@@ -37,8 +37,8 @@ namespace WebhookTester.API.Controllers
                 ReceivedAt = DateTimeOffset.UtcNow
             };
 
-            var saved = await service.HandleRequestAsync(webhookId, request);
-            return saved ? Ok(new { message = "Request saved" }) : NotFound();
+            var result = await service.HandleRequestAsync(webhookId, request);
+            return result.Success ? Ok(new { message = "Request saved" }) : NotFound();
         }
 
         private Dictionary<string, string?[]> GetHeaders()

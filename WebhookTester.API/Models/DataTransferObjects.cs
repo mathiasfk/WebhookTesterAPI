@@ -10,7 +10,7 @@
         /// </summary>
         /// <param name="Id">Webhook unique identifier</param>
         /// <param name="Url">Webhook URL</param>
-        public record WebhookDTO(Guid Id, string Url);
+        public record WebhookDto(Guid Id, string Url);
 
         /// <summary>
         /// Represents a request on a webhook.
@@ -20,7 +20,7 @@
         /// <param name="Headers">Request headers.</param>
         /// <param name="Body">Request body.</param>
         /// <param name="ReceivedAt">Date and time the request was received.</param>
-        public record WebhookRequestDTO(
+        public record WebhookRequestDto(
             Guid Id,
             string HttpMethod,
             Dictionary<string, string[]> Headers,

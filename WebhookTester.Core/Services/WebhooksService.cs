@@ -1,52 +1,54 @@
-﻿using WebhookTester.Core.Entities;
+﻿using WebhookTester.Core.Common;
+using WebhookTester.Core.Entities;
 using WebhookTester.Core.Interfaces;
 
 namespace WebhookTester.Core.Services
 {
     public class WebhooksService(IWebhooksRepository repository, IServerSentEventsService sse) : IWebhookService
     {
-        public async Task<Webhook> CreateWebhook(Guid token)
+        public async Task<OperationResult<Webhook>> CreateWebhook(Guid token)
         {
             var webhook = new Webhook { OwnerToken = token };
             await repository.AddAsync(webhook);
 
-            return webhook;
+            return OperationResult<Webhook>.SuccessResult(webhook);
         }
 
-        public async Task<IEnumerable<Webhook>> ListWebhooks(Guid token)
+        public async Task<OperationResult<IEnumerable<Webhook>>> ListWebhooks(Guid token)
         {
-            return await repository.GetByTokenAsync(token);
+            var list = await repository.GetByTokenAsync(token);
+            return OperationResult<IEnumerable<Webhook>>.SuccessResult(list);
         }
 
-        public async Task<bool> DeleteWebhook(Guid token, Guid webhookId)
+        public async Task<OperationResult> DeleteWebhook(Guid token, Guid webhookId)
         {
             var webhook = await repository.GetByIdAsync(webhookId);
             if (webhook == null || webhook.OwnerToken != token)
-                return false;
+                return OperationResult.FailureResult("Webhook not found", ErrorCode.NotFound);
 
             await repository.RemoveAsync(webhook);
-            return true;
+            return OperationResult.SuccessResult();
         }
 
-        public async Task<IEnumerable<WebhookRequest>> GetRequests(Guid token, Guid webhookId)
+        public async Task<OperationResult<IEnumerable<WebhookRequest>>> GetRequests(Guid token, Guid webhookId)
         {
             var webhook = await repository.GetByIdAsync(webhookId);
             if (webhook == null || webhook.OwnerToken != token)
-                return [];
+                return OperationResult<IEnumerable<WebhookRequest>>.FailureResult("Webhook not found", ErrorCode.NotFound);
 
-            return webhook.Requests;
+            return OperationResult<IEnumerable<WebhookRequest>>.SuccessResult(webhook.Requests);
         }
 
-        public async Task<bool> HandleRequestAsync(Guid webhookId, WebhookRequest request)
+        public async Task<OperationResult> HandleRequestAsync(Guid webhookId, WebhookRequest request)
         {
             var webhook = await repository.GetByIdAsync(webhookId);
             if (webhook == null)
-                return false;
+                return OperationResult.FailureResult("Webhook not found", ErrorCode.NotFound);
 
             await repository.AddRequestAsync(request);
             await sse.WriteToChannelAsync(webhookId, request);
 
-            return true;
+            return OperationResult.SuccessResult();
         }
     }
 }

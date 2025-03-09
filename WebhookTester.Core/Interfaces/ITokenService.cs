@@ -1,7 +1,9 @@
-﻿namespace WebhookTester.Core.Interfaces
+﻿using WebhookTester.Core.Common;
+
+namespace WebhookTester.Core.Interfaces
 {
     public interface ITokenService
     {
-        public Guid CreateToken();
+        public OperationResult<Guid> CreateToken();
     }
 }

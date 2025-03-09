@@ -20,7 +20,7 @@ namespace WebhookTester.API.Controllers
         public IActionResult Post()
         {
             var token = service.CreateToken();
-            return Ok(token);
+            return Ok(token.Data);
         }
     }
 }

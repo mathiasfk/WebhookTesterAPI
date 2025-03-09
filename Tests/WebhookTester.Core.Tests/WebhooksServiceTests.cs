@@ -1,4 +1,5 @@
 ﻿using NSubstitute;
+using WebhookTester.Core.Common;
 using WebhookTester.Core.Entities;
 using WebhookTester.Core.Interfaces;
 using WebhookTester.Core.Services;
@@ -29,8 +30,8 @@ namespace WebhookTester.Core.Tests
             var result = await _webhooksService.CreateWebhook(token);
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(token, result.OwnerToken);
+            Assert.IsTrue(result.Success);
+            Assert.AreEqual(token, result.Data.OwnerToken);
             await _repository.Received(1).AddAsync(Arg.Any<Webhook>());
         }
 
@@ -46,9 +47,9 @@ namespace WebhookTester.Core.Tests
             var result = await _webhooksService.ListWebhooks(token);
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(1, result.Count());
-            Assert.AreEqual(token, result.First().OwnerToken);
+            Assert.IsTrue(result.Success);
+            Assert.AreEqual(1, result.Data.Count());
+            Assert.AreEqual(token, result.Data.First().OwnerToken);
         }
 
         [TestMethod]
@@ -63,12 +64,12 @@ namespace WebhookTester.Core.Tests
             var result = await _webhooksService.ListWebhooks(token);
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(0, result.Count());
+            Assert.IsTrue(result.Success);
+            Assert.AreEqual(0, result.Data.Count());
         }
 
         [TestMethod]
-        public async Task DeleteWebhook_WhenWebhookExists_ShouldReturnTrue()
+        public async Task DeleteWebhook_WhenWebhookExists_ShouldReturnSuccessResult()
         {
             // Arrange
             var token = Guid.NewGuid();
@@ -81,12 +82,12 @@ namespace WebhookTester.Core.Tests
             var result = await _webhooksService.DeleteWebhook(token, webhookId);
 
             // Assert
-            Assert.IsTrue(result);
+            Assert.IsTrue(result.Success);
             await _repository.Received(1).RemoveAsync(webhook);
         }
 
         [TestMethod]
-        public async Task DeleteWebhook_WhenWebhookDoesntExist_ShouldReturnFalse()
+        public async Task DeleteWebhook_WhenWebhookDoesntExist_ShouldReturnErrorResult()
         {
             // Arrange
             var token = Guid.NewGuid();
@@ -97,12 +98,14 @@ namespace WebhookTester.Core.Tests
             var result = await _webhooksService.DeleteWebhook(token, webhookId);
 
             // Assert
-            Assert.IsFalse(result);
+            Assert.IsFalse(result.Success);
+            Assert.IsNotNull(result.Error);
+            Assert.AreEqual(ErrorCode.NotFound, result.Error.Code);
             await _repository.Received(0).RemoveAsync(Arg.Any<Webhook>());
         }
 
         [TestMethod]
-        public async Task GetRequests_WhenWebhookExists_ShouldReturnRequests()
+        public async Task GetRequests_WhenWebhookExists_ShouldReturnRequestList()
         {
             // Arrange
             var token = Guid.NewGuid();
@@ -115,9 +118,9 @@ namespace WebhookTester.Core.Tests
             var result = await _webhooksService.GetRequests(token, webhookId);
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(1, result.Count());
-            Assert.AreEqual(webhookId, result.First().WebhookId);
+            Assert.IsTrue(result.Success);
+            Assert.AreEqual(1, result.Data.Count());
+            Assert.AreEqual(webhookId, result.Data.First().WebhookId);
         }
 
         [TestMethod]
@@ -134,12 +137,12 @@ namespace WebhookTester.Core.Tests
             var result = await _webhooksService.GetRequests(token, webhookId);
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(0, result.Count());
+            Assert.IsTrue(result.Success);
+            Assert.AreEqual(0, result.Data.Count());
         }
 
         [TestMethod]
-        public async Task GetRequests_WhenWebhookDoesntExist_ShouldReturnEmptyList()
+        public async Task GetRequests_WhenWebhookDoesntExist_ShouldReturnErrorResult()
         {
             // Arrange
             var token = Guid.NewGuid();
@@ -150,12 +153,13 @@ namespace WebhookTester.Core.Tests
             var result = await _webhooksService.GetRequests(token, webhookId);
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(0, result.Count());
+            Assert.IsFalse(result.Success);
+            Assert.IsNotNull(result.Error);
+            Assert.AreEqual(ErrorCode.NotFound, result.Error.Code);
         }
 
         [TestMethod]
-        public async Task HandleRequestAsync_WhenWebhookExists_ShouldReturnTrue()
+        public async Task HandleRequestAsync_WhenWebhookExists_ShouldReturnSuccessResult()
         {
             // Arrange
             var webhookId = Guid.NewGuid();
@@ -169,13 +173,13 @@ namespace WebhookTester.Core.Tests
             var result = await _webhooksService.HandleRequestAsync(webhookId, request);
 
             // Assert
-            Assert.IsTrue(result);
+            Assert.IsTrue(result.Success);
             await _repository.Received(1).AddRequestAsync(request);
             await _sse.Received(1).WriteToChannelAsync(webhookId, request);
         }
 
         [TestMethod]
-        public async Task HandleRequestAsync_WhenWebhookDoesntExist_ShouldReturnFalse()
+        public async Task HandleRequestAsync_WhenWebhookDoesntExist_ShouldReturnErrorResult()
         {
             // Arrange
             var webhookId = Guid.NewGuid();
@@ -187,7 +191,9 @@ namespace WebhookTester.Core.Tests
             var result = await _webhooksService.HandleRequestAsync(webhookId, request);
 
             // Assert
-            Assert.IsFalse(result);
+            Assert.IsFalse(result.Success);
+            Assert.IsNotNull(result.Error);
+            Assert.AreEqual(ErrorCode.NotFound, result.Error.Code);
             await _repository.Received(0).AddRequestAsync(Arg.Any<WebhookRequest>());
             await _sse.Received(0).WriteToChannelAsync(Arg.Any<Guid>(), Arg.Any<WebhookRequest>());
         }
