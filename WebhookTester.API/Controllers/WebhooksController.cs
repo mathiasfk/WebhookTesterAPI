@@ -3,6 +3,7 @@ using System.Text.Json;
 using WebhookTester.Core.Common;
 using WebhookTester.Core.Interfaces;
 using static WebhookTester.API.Models.DataTransferObjects;
+using static WebhookTester.API.Utils.AuthUtils;
 
 namespace WebhookTester.API.Controllers
 {
@@ -30,7 +31,7 @@ namespace WebhookTester.API.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Post()
         {
-            var token = GetAndValidateToken();
+            var token = GetAndValidateToken(HttpContext);
 
             var result = await webhookService.CreateWebhook(token);
             var webhook = result.Data;
@@ -48,7 +49,7 @@ namespace WebhookTester.API.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Get()
         {
-            var token = GetAndValidateToken();
+            var token = GetAndValidateToken(HttpContext);
 
             var result = await webhookService.ListWebhooks(token);
             var webhooks = result.Data;
@@ -68,7 +69,7 @@ namespace WebhookTester.API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var token = GetAndValidateToken();
+            var token = GetAndValidateToken(HttpContext);
 
             var result = await webhookService.DeleteWebhook(token, id);
             return result.Success ? Ok(new { message = "Webhook deleted" }) : NotFound();
@@ -85,7 +86,7 @@ namespace WebhookTester.API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetRequests(Guid id)
         {
-            var token = GetAndValidateToken();
+            var token = GetAndValidateToken(HttpContext);
 
             var result = await webhookService.GetRequests(token, id);
             if (!result.Success && result.Error?.Code == ErrorCode.NotFound)
@@ -118,15 +119,6 @@ namespace WebhookTester.API.Controllers
                 await HttpContext.Response.WriteAsync($"data: {json}\n\n");
                 await HttpContext.Response.Body.FlushAsync();
             }
-        }
-
-        private Guid GetAndValidateToken()
-        {
-            var token = HttpContext.Request.Headers.Authorization.ToString();
-            if (string.IsNullOrEmpty(token) || !Guid.TryParse(token, out Guid guidToken))
-                throw new UnauthorizedAccessException();
-
-            return guidToken;
         }
     }
 }
