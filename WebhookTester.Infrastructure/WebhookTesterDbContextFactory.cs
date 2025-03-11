@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using System.Diagnostics.CodeAnalysis;
 
 namespace WebhookTester.Infrastructure
 {
+    [ExcludeFromCodeCoverage]
     public class WebhookTesterDbContextFactory : IDesignTimeDbContextFactory<WebhookTesterDbContext>
     {
         public WebhookTesterDbContext CreateDbContext(string[] args)

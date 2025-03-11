@@ -1,9 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using WebhookTester.Core.Entities;
 
 namespace WebhookTester.Infrastructure
 {
+    [ExcludeFromCodeCoverage]
     public class WebhookTesterDbContext(DbContextOptions<WebhookTesterDbContext> options) : DbContext(options)
     {
         public DbSet<Token> Tokens { get; set; } = null!;
