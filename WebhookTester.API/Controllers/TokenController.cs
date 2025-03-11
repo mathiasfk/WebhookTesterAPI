@@ -17,10 +17,10 @@ namespace WebhookTester.API.Controllers
         /// <returns>The created token</returns>
         [HttpPost()]
         [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
-        public IActionResult Post()
+        public async Task<IActionResult> Post()
         {
-            var token = service.CreateToken();
-            return Ok(token.Data);
+            var result = await service.CreateToken();
+            return Ok(result.Data.Id);
         }
     }
 }

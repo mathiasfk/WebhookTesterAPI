@@ -1,13 +1,17 @@
 ﻿using WebhookTester.Core.Common;
+using WebhookTester.Core.Entities;
 using WebhookTester.Core.Interfaces;
 
 namespace WebhookTester.Core.Services
 {
-    public class TokenService : ITokenService
+    public class TokenService(ITokenRepository repository) : ITokenService
     {
-        public OperationResult<Guid> CreateToken()
+        public async Task<OperationResult<Token>> CreateToken()
         {
-            return OperationResult<Guid>.SuccessResult(Guid.NewGuid());
+            var token = new Token() { Id = Guid.NewGuid(), Created = DateTimeOffset.UtcNow };
+            await repository.AddAsync(token);
+
+            return OperationResult<Token>.SuccessResult(token);
         }
     }
 }
