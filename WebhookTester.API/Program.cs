@@ -10,13 +10,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Database setup
 builder.Services.AddDbContext<WebhookTesterDbContext>(options =>
-    options.UseSqlite("Data Source=webhooks.db"));
+    options.UseSqlite("Data Source=../WebhookTester.Infrastructure/webhooks.db"));
 
 // Dependency injection
 builder.Services.AddControllers();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IWebhookService, WebhooksService>();
 builder.Services.AddScoped<IWebhooksRepository, WebhooksRepository>();
+builder.Services.AddScoped<ITokenRepository, TokenRepository>();
 builder.Services.AddSingleton<IServerSentEventsService, ServerSentEventsService>();
 
 // Swagger
