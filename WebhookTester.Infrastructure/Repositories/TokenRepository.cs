@@ -11,5 +11,11 @@ namespace WebhookTester.Infrastructure.Repositories
             context.Tokens.Add(token);
             await context.SaveChangesAsync();
         }
+
+        public async Task<Token?> GetByIdAsync(Guid id)
+        {
+            return await context.Tokens
+                .FirstOrDefaultAsync(t => t.Id == id);
+        }
     }
 }

@@ -13,12 +13,15 @@ namespace WebhookTester.API.Controllers
     /// <param name="webhookService"></param>
     /// <param name="configuration"></param>
     /// <param name="sseService"></param>
+    /// <param name="tokenService"></param>
     [ApiController]
     [Route("[controller]")]
     public class WebhooksController(
         IWebhookService webhookService,
         IConfiguration configuration,
-        IServerSentEventsService sseService) : ControllerBase
+        IServerSentEventsService sseService,
+        ITokenService tokenService
+        ) : ControllerBase
     {
         private string BaseUrl => configuration["BaseUrl"] ?? "http://localhost";
 
@@ -31,7 +34,14 @@ namespace WebhookTester.API.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Post()
         {
-            var token = GetAndValidateToken(HttpContext);
+            // TODO: avoid this duplication
+            // TODO: add token cache
+            var tokenResult = await tokenService.ValidateToken(HttpContext.Request.Headers.Authorization.ToString());
+            if (!tokenResult.Success)
+            {
+                return MapErrorToResponse(tokenResult.Error!);
+            }
+            var token = tokenResult.Data.Id;
 
             var result = await webhookService.CreateWebhook(token);
             var webhook = result.Data;
@@ -49,7 +59,12 @@ namespace WebhookTester.API.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Get()
         {
-            var token = GetAndValidateToken(HttpContext);
+            var tokenResult = await tokenService.ValidateToken(HttpContext.Request.Headers.Authorization.ToString());
+            if (!tokenResult.Success)
+            {
+                return MapErrorToResponse(tokenResult.Error!);
+            }
+            var token = tokenResult.Data.Id;
 
             var result = await webhookService.ListWebhooks(token);
             var webhooks = result.Data;
@@ -69,7 +84,12 @@ namespace WebhookTester.API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var token = GetAndValidateToken(HttpContext);
+            var tokenResult = await tokenService.ValidateToken(HttpContext.Request.Headers.Authorization.ToString());
+            if (!tokenResult.Success)
+            {
+                return MapErrorToResponse(tokenResult.Error!);
+            }
+            var token = tokenResult.Data.Id;
 
             var result = await webhookService.DeleteWebhook(token, id);
             return result.Success ? Ok(new { message = "Webhook deleted" }) : NotFound();
@@ -86,7 +106,12 @@ namespace WebhookTester.API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetRequests(Guid id)
         {
-            var token = GetAndValidateToken(HttpContext);
+            var tokenResult = await tokenService.ValidateToken(HttpContext.Request.Headers.Authorization.ToString());
+            if (!tokenResult.Success)
+            {
+                return MapErrorToResponse(tokenResult.Error!);
+            }
+            var token = tokenResult.Data.Id;
 
             var result = await webhookService.GetRequests(token, id);
             if (!result.Success && result.Error?.Code == ErrorCode.NotFound)
@@ -119,6 +144,18 @@ namespace WebhookTester.API.Controllers
                 await HttpContext.Response.WriteAsync($"data: {json}\n\n");
                 await HttpContext.Response.Body.FlushAsync();
             }
+        }
+
+        private IActionResult MapErrorToResponse(Error error)
+        {
+            return error.Code switch
+            {
+                ErrorCode.BadRequest => BadRequest(error.Message),
+                ErrorCode.Unauthorized => Unauthorized(),
+                ErrorCode.NotFound => NotFound(),
+                ErrorCode.InternalError => StatusCode(StatusCodes.Status500InternalServerError),
+                _ => StatusCode(StatusCodes.Status500InternalServerError),
+            };
         }
     }
 }
