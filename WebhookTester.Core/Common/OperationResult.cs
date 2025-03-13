@@ -7,15 +7,6 @@
 
         protected OperationResult(bool success, Error? error = null)
         {
-            if (!success && error is null)
-            {
-                throw new ArgumentNullException(nameof(error), "Error cannot be null when success is false.");
-            }
-            if (success && error is not null)
-            {
-                throw new ArgumentNullException(nameof(error), "Error must be null when success is true.");
-            }
-
             Success = success;
             Error = error;
         }

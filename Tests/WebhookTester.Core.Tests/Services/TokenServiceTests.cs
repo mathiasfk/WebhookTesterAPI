@@ -4,7 +4,7 @@ using WebhookTester.Core.Entities;
 using WebhookTester.Core.Interfaces;
 using WebhookTester.Core.Services;
 
-namespace WebhookTester.Core.Tests
+namespace WebhookTester.Core.Tests.Services
 {
     [TestClass]
     public sealed class TokenServiceTests
