@@ -66,7 +66,7 @@ namespace WebhookTester.Core.Tests
         }
 
         [TestMethod]
-        public async Task ValidateToken_WithNullToken_ShouldReturnUnauthorized()
+        public async Task ValidateToken_WithNonExistentToken_ShouldReturnUnauthorized()
         {
             // Arrange
             var token = Guid.NewGuid();

@@ -22,6 +22,7 @@ namespace WebhookTester.API.Controllers
         ) : ControllerBase
     {
         private string BaseUrl => configuration["BaseUrl"] ?? "http://localhost";
+        private const string Token = "Token";
 
         /// <summary>
         /// Create a new webhook
@@ -33,7 +34,7 @@ namespace WebhookTester.API.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Post()
         {
-            var token = (Guid)HttpContext.Items["Token"]!;
+            var token = (Guid)HttpContext.Items[Token]!;
 
             var result = await webhookService.CreateWebhook(token);
             var webhook = result.Data;
@@ -52,7 +53,7 @@ namespace WebhookTester.API.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Get()
         {
-            var token = (Guid)HttpContext.Items["Token"]!;
+            var token = (Guid)HttpContext.Items[Token]!;
 
             var result = await webhookService.ListWebhooks(token);
             var webhooks = result.Data;
@@ -73,7 +74,7 @@ namespace WebhookTester.API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var token = (Guid)HttpContext.Items["Token"]!;
+            var token = (Guid)HttpContext.Items[Token]!;
 
             var result = await webhookService.DeleteWebhook(token, id);
             return result.Success ? Ok(new { message = "Webhook deleted" }) : NotFound();
@@ -91,7 +92,7 @@ namespace WebhookTester.API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetRequests(Guid id)
         {
-            var token = (Guid)HttpContext.Items["Token"]!;
+            var token = (Guid)HttpContext.Items[Token]!;
 
             var result = await webhookService.GetRequests(token, id);
             if (!result.Success && result.Error?.Code == ErrorCode.NotFound)
