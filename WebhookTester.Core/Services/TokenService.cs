@@ -4,7 +4,7 @@ using WebhookTester.Core.Interfaces;
 
 namespace WebhookTester.Core.Services
 {
-    public class TokenService(ITokenRepository repository, ICache<Token?> cache) : ITokenService
+    public class TokenService(ITokenRepository repository, ICache<Token> cache) : ITokenService
     {
         public async Task<OperationResult<Token>> CreateToken()
         {

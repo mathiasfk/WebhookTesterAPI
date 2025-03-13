@@ -13,8 +13,8 @@ namespace WebhookTester.Core.Tests.Services
         private readonly ICache<Token> _cache = Substitute.For<ICache<Token>>();
         private TokenService _tokenService = null!;
 
-        private readonly DateTimeOffset _validCreationgTime = DateTimeOffset.UtcNow.AddMinutes(-20);
-        private readonly DateTimeOffset _expiredCreationgTime = DateTimeOffset.UtcNow.AddYears(-3);
+        private readonly DateTimeOffset _validCreationTime = DateTimeOffset.UtcNow.AddMinutes(-20);
+        private readonly DateTimeOffset _expiredCreationTime = DateTimeOffset.UtcNow.AddYears(-3);
 
         [TestInitialize]
         public void Setup()
@@ -90,7 +90,7 @@ namespace WebhookTester.Core.Tests.Services
         {
             // Arrange
             var token = Guid.NewGuid();
-            _repository.GetByIdAsync(token).Returns(new Token() { Id = token, Created = _expiredCreationgTime });
+            _repository.GetByIdAsync(token).Returns(new Token() { Id = token, Created = _expiredCreationTime });
 
             // Act
             var result = await _tokenService.ValidateToken(token.ToString());
@@ -106,7 +106,7 @@ namespace WebhookTester.Core.Tests.Services
         {
             // Arrange
             var token = Guid.NewGuid();
-            _repository.GetByIdAsync(token).Returns(new Token() { Id = token, Created = _validCreationgTime });
+            _repository.GetByIdAsync(token).Returns(new Token() { Id = token, Created = _validCreationTime });
 
             // Act
             var result = await _tokenService.ValidateToken(token.ToString());
@@ -121,7 +121,7 @@ namespace WebhookTester.Core.Tests.Services
         {
             // Arrange
             var token = Guid.NewGuid();
-            _cache.GetAsync(Arg.Any<string>()).Returns(new Token() { Id = token, Created = _validCreationgTime });
+            _cache.GetAsync(Arg.Any<string>()).Returns(new Token() { Id = token, Created = _validCreationTime });
 
             // Act
             var result = await _tokenService.ValidateToken(token.ToString());
@@ -136,7 +136,7 @@ namespace WebhookTester.Core.Tests.Services
         {
             // Arrange
             var token = Guid.NewGuid();
-            _cache.GetAsync(Arg.Any<string>()).Returns(new Token() { Id = token, Created = _expiredCreationgTime });
+            _cache.GetAsync(Arg.Any<string>()).Returns(new Token() { Id = token, Created = _expiredCreationTime });
 
             // Act
             var result = await _tokenService.ValidateToken(token.ToString());
