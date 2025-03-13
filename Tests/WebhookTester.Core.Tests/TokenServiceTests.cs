@@ -10,12 +10,16 @@ namespace WebhookTester.Core.Tests
     public sealed class TokenServiceTests
     {
         private readonly ITokenRepository _repository = Substitute.For<ITokenRepository>();
+        private readonly ICache<Token> _cache = Substitute.For<ICache<Token>>();
         private TokenService _tokenService = null!;
+
+        private readonly DateTimeOffset _validCreationgTime = DateTimeOffset.UtcNow.AddMinutes(-20);
+        private readonly DateTimeOffset _expiredCreationgTime = DateTimeOffset.UtcNow.AddYears(-3);
 
         [TestInitialize]
         public void Setup()
         {
-            _tokenService = new TokenService(_repository);
+            _tokenService = new TokenService(_repository, _cache);
         }
 
         [TestMethod]
@@ -82,11 +86,11 @@ namespace WebhookTester.Core.Tests
         }
 
         [TestMethod]
-        public async Task ValidateToken_WithExpiredToken_ShouldReturnUnauthorized()
+        public async Task ValidateToken_WithExpiredUncachedToken_ShouldReturnUnauthorized()
         {
             // Arrange
             var token = Guid.NewGuid();
-            _repository.GetByIdAsync(token).Returns(new Token() { Id = token, Created = DateTimeOffset.UtcNow.AddYears(-3) });
+            _repository.GetByIdAsync(token).Returns(new Token() { Id = token, Created = _expiredCreationgTime });
 
             // Act
             var result = await _tokenService.ValidateToken(token.ToString());
@@ -98,11 +102,11 @@ namespace WebhookTester.Core.Tests
         }
 
         [TestMethod]
-        public async Task ValidateToken_WithValidToken_ShouldReturnSuccess()
+        public async Task ValidateToken_WithValidUncachedToken_ShouldReturnSuccess()
         {
             // Arrange
             var token = Guid.NewGuid();
-            _repository.GetByIdAsync(token).Returns(new Token() { Id = token, Created = DateTimeOffset.UtcNow.AddMinutes(-20)});
+            _repository.GetByIdAsync(token).Returns(new Token() { Id = token, Created = _validCreationgTime });
 
             // Act
             var result = await _tokenService.ValidateToken(token.ToString());
@@ -110,6 +114,37 @@ namespace WebhookTester.Core.Tests
             // Assert
             Assert.IsTrue(result.Success);
             Assert.AreEqual(token, result.Data.Id);
+        }
+
+        [TestMethod]
+        public async Task ValidateToken_WithValidCachedToken_ShouldReturnSuccess()
+        {
+            // Arrange
+            var token = Guid.NewGuid();
+            _cache.GetAsync(Arg.Any<string>()).Returns(new Token() { Id = token, Created = _validCreationgTime });
+
+            // Act
+            var result = await _tokenService.ValidateToken(token.ToString());
+
+            // Assert
+            Assert.IsTrue(result.Success);
+            Assert.AreEqual(token, result.Data.Id);
+        }
+
+        [TestMethod]
+        public async Task ValidateToken_WithExpiredCachedToken_ShouldReturnUnauthorized()
+        {
+            // Arrange
+            var token = Guid.NewGuid();
+            _cache.GetAsync(Arg.Any<string>()).Returns(new Token() { Id = token, Created = _expiredCreationgTime });
+
+            // Act
+            var result = await _tokenService.ValidateToken(token.ToString());
+
+            // Assert
+            Assert.IsFalse(result.Success);
+            Assert.IsNotNull(result.Error);
+            Assert.AreEqual(ErrorCode.Unauthorized, result.Error.Code);
         }
     }
 }

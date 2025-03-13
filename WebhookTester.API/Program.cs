@@ -21,6 +21,9 @@ builder.Services.AddScoped<IWebhooksRepository, WebhooksRepository>();
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
 builder.Services.AddSingleton<IServerSentEventsService, ServerSentEventsService>();
 builder.Services.AddScoped<ValidateTokenFilter>();
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped(typeof(ICache<>), typeof(MemoryCache<>));
+
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
