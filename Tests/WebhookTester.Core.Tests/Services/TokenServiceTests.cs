@@ -146,5 +146,56 @@ namespace WebhookTester.Core.Tests.Services
             Assert.IsNotNull(result.Error);
             Assert.AreEqual(ErrorCode.Unauthorized, result.Error.Code);
         }
+
+        [TestMethod]
+        public async Task RefreshToken_WithValidToken_ShouldReturnSuccess()
+        {
+            // Arrange
+            var token = Guid.NewGuid();
+            var tokenEntity = new Token() { Id = token, LastUsed = _validLastUsedTime };
+            _repository.GetByIdAsync(token).Returns(tokenEntity);
+            _cache.GetAsync(Arg.Any<string>()).Returns(tokenEntity);
+
+            // Act
+            var result = await _tokenService.RefreshToken(token.ToString());
+
+            // Assert
+            Assert.IsTrue(result.Success);
+            await _repository.Received(1).UpdateAsync(Arg.Is<Token>(t => t.Id == token && t.LastUsed > _validLastUsedTime));
+        }
+
+        [TestMethod]
+        public async Task RefreshToken_WithNonExistentToken_ShouldReturnFailure()
+        {
+            // Arrange
+            var token = Guid.NewGuid();
+            _repository.GetByIdAsync(token).Returns((Token?)null);
+
+            // Act
+            var result = await _tokenService.RefreshToken(token.ToString());
+
+            // Assert
+            Assert.IsFalse(result.Success);
+            Assert.IsNotNull(result.Error);
+            Assert.AreEqual(ErrorCode.Unauthorized, result.Error.Code);
+        }
+
+        [TestMethod]
+        public async Task RefreshToken_WithExpiredToken_ShouldReturnFailure()
+        {
+            // Arrange
+            var token = Guid.NewGuid();
+            var tokenEntity = new Token() { Id = token, LastUsed = _expiredLastUsedTime };
+            _repository.GetByIdAsync(token).Returns(tokenEntity);
+            _cache.GetAsync(Arg.Any<string>()).Returns(tokenEntity);
+
+            // Act
+            var result = await _tokenService.RefreshToken(token.ToString());
+
+            // Assert
+            Assert.IsFalse(result.Success);
+            Assert.IsNotNull(result.Error);
+            Assert.AreEqual(ErrorCode.Unauthorized, result.Error.Code);
+        }
     }
 }

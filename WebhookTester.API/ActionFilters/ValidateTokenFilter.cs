@@ -1,7 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-using WebhookTester.Core.Common;
+﻿using Microsoft.AspNetCore.Mvc.Filters;
 using WebhookTester.Core.Interfaces;
+using static WebhookTester.API.Utils.StatusCodeUtils;
 
 namespace WebhookTester.API.ActionFilters
 {
@@ -22,16 +21,7 @@ namespace WebhookTester.API.ActionFilters
             var tokenResult = await tokenService.ValidateToken(context.HttpContext.Request.Headers.Authorization.ToString());
             if (!tokenResult.Success)
             {
-                context.Result = new ObjectResult(tokenResult.Error?.Message)
-                {
-                    StatusCode = tokenResult.Error?.Code switch
-                    {
-                        ErrorCode.BadRequest => StatusCodes.Status400BadRequest,
-                        ErrorCode.Unauthorized => StatusCodes.Status401Unauthorized,
-                        ErrorCode.NotFound => StatusCodes.Status404NotFound,
-                        _ => StatusCodes.Status500InternalServerError,
-                    }
-                };
+                context.Result = MapErrorToResult(tokenResult.Error);
                 return;
             }
 
