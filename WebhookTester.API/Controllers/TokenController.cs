@@ -22,5 +22,22 @@ namespace WebhookTester.API.Controllers
             var result = await service.CreateToken();
             return Ok(result.Data.Id);
         }
+
+        /// <summary>
+        /// Refresh an existing token
+        /// </summary>
+        /// <returns></returns>
+        [HttpPatch()]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Patch(string token)
+        {
+            var result = await service.RefreshToken(token);
+            if (!result.Success)
+            {
+                return NotFound();
+            }
+            return Ok();
+        }
     }
 }

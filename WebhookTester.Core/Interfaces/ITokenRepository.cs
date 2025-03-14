@@ -6,5 +6,6 @@ namespace WebhookTester.Core.Interfaces
     {
         Task AddAsync(Token token);
         Task<Token?> GetByIdAsync(Guid id);
+        Task UpdateAsync(Token token);
     }
 }

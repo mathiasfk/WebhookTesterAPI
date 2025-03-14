@@ -17,5 +17,11 @@ namespace WebhookTester.Infrastructure.Repositories
             return await context.Tokens
                 .FirstOrDefaultAsync(t => t.Id == id);
         }
+
+        public async Task UpdateAsync(Token token)
+        {
+            context.Tokens.Update(token);
+            await context.SaveChangesAsync();
+        }
     }
 }

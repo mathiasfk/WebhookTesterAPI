@@ -36,12 +36,31 @@ namespace WebhookTester.Core.Services
                 await cache.SetAsync(cacheKey, token);
             }
 
-            if (token.Created < DateTimeOffset.Now.AddDays(-30))
+            if (token.LastUsed < DateTimeOffset.UtcNow.AddDays(-30))
             {
                 return OperationResult<Token>.FailureResult("Expired token", ErrorCode.Unauthorized);
             }
 
             return OperationResult<Token>.SuccessResult(token);
+        }
+
+        public async Task<OperationResult> RefreshToken(string id)
+        {
+            var result = await ValidateToken(id);
+            if (!result.Success)
+            {
+                return result;
+            }
+
+            var token = result.Data;
+            token.LastUsed = DateTimeOffset.UtcNow;
+
+            await repository.UpdateAsync(token);
+
+            var cacheKey = BuildCacheKey(token);
+            await cache.SetAsync(cacheKey, token);
+
+            return OperationResult.SuccessResult();
         }
 
         private static string BuildCacheKey(Token token) => BuildCacheKey(token.Id);
