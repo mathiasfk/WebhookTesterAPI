@@ -4,14 +4,66 @@ using WebhookTester.Core.Interfaces;
 
 namespace WebhookTester.Core.Services
 {
-    public class TokenService(ITokenRepository repository) : ITokenService
+    public class TokenService(ITokenRepository repository, ICache<Token> cache) : ITokenService
     {
         public async Task<OperationResult<Token>> CreateToken()
         {
             var token = new Token() { Id = Guid.NewGuid(), Created = DateTimeOffset.UtcNow };
             await repository.AddAsync(token);
 
+            var cacheKey = BuildCacheKey(token);
+            await cache.SetAsync(cacheKey, token);
+
             return OperationResult<Token>.SuccessResult(token);
         }
+
+        public async Task<OperationResult<Token>> ValidateToken(string id)
+        {
+            if (string.IsNullOrEmpty(id) || !Guid.TryParse(id, out Guid guid))
+            {
+                return OperationResult<Token>.FailureResult("Invalid token", ErrorCode.BadRequest);
+            }
+
+            var cacheKey = BuildCacheKey(guid);
+            var token = await cache.GetAsync(cacheKey);
+            if (token is null)
+            {
+                token = await repository.GetByIdAsync(guid);
+                if (token is null)
+                {
+                    return OperationResult<Token>.FailureResult("Invalid token", ErrorCode.Unauthorized);
+                }
+                await cache.SetAsync(cacheKey, token);
+            }
+
+            if (token.LastUsed < DateTimeOffset.UtcNow.AddDays(-30))
+            {
+                return OperationResult<Token>.FailureResult("Expired token", ErrorCode.Unauthorized);
+            }
+
+            return OperationResult<Token>.SuccessResult(token);
+        }
+
+        public async Task<OperationResult> RefreshToken(string id)
+        {
+            var result = await ValidateToken(id);
+            if (!result.Success)
+            {
+                return result;
+            }
+
+            var token = result.Data;
+            token.LastUsed = DateTimeOffset.UtcNow;
+
+            await repository.UpdateAsync(token);
+
+            var cacheKey = BuildCacheKey(token);
+            await cache.SetAsync(cacheKey, token);
+
+            return OperationResult.SuccessResult();
+        }
+
+        private static string BuildCacheKey(Token token) => BuildCacheKey(token.Id);
+        private static string BuildCacheKey(Guid id) => $"Token_{id}";
     }
 }

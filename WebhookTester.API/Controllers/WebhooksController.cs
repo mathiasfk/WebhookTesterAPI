@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using WebhookTester.API.ActionFilters;
 using WebhookTester.Core.Common;
 using WebhookTester.Core.Interfaces;
 using static WebhookTester.API.Models.DataTransferObjects;
-using static WebhookTester.API.Utils.AuthUtils;
 
 namespace WebhookTester.API.Controllers
 {
@@ -18,20 +18,23 @@ namespace WebhookTester.API.Controllers
     public class WebhooksController(
         IWebhookService webhookService,
         IConfiguration configuration,
-        IServerSentEventsService sseService) : ControllerBase
+        IServerSentEventsService sseService
+        ) : ControllerBase
     {
         private string BaseUrl => configuration["BaseUrl"] ?? "http://localhost";
+        private const string Token = "Token";
 
         /// <summary>
         /// Create a new webhook
         /// </summary>
         /// <returns>The created webhook info</returns>
         [HttpPost()]
+        [ServiceFilter(typeof(ValidateTokenFilter))]
         [ProducesResponseType(typeof(WebhookDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Post()
         {
-            var token = GetAndValidateToken(HttpContext);
+            var token = (Guid)HttpContext.Items[Token]!;
 
             var result = await webhookService.CreateWebhook(token);
             var webhook = result.Data;
@@ -45,11 +48,12 @@ namespace WebhookTester.API.Controllers
         /// </summary>
         /// <returns>A list of webhooks.</returns>
         [HttpGet()]
+        [ServiceFilter(typeof(ValidateTokenFilter))]
         [ProducesResponseType(typeof(WebhookDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Get()
         {
-            var token = GetAndValidateToken(HttpContext);
+            var token = (Guid)HttpContext.Items[Token]!;
 
             var result = await webhookService.ListWebhooks(token);
             var webhooks = result.Data;
@@ -64,12 +68,13 @@ namespace WebhookTester.API.Controllers
         /// <param name="id">The ID of the webhook to delete.</param>
         /// <returns>A success or error message.</returns>
         [HttpDelete("{id:guid}")]
+        [ServiceFilter(typeof(ValidateTokenFilter))]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var token = GetAndValidateToken(HttpContext);
+            var token = (Guid)HttpContext.Items[Token]!;
 
             var result = await webhookService.DeleteWebhook(token, id);
             return result.Success ? Ok(new { message = "Webhook deleted" }) : NotFound();
@@ -81,12 +86,13 @@ namespace WebhookTester.API.Controllers
         /// <param name="id">The ID of the webhook.</param>
         /// <returns>A list of requests.</returns>
         [HttpGet("{id:guid}/requests")]
+        [ServiceFilter(typeof(ValidateTokenFilter))]
         [ProducesResponseType(typeof(WebhookRequestDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetRequests(Guid id)
         {
-            var token = GetAndValidateToken(HttpContext);
+            var token = (Guid)HttpContext.Items[Token]!;
 
             var result = await webhookService.GetRequests(token, id);
             if (!result.Success && result.Error?.Code == ErrorCode.NotFound)

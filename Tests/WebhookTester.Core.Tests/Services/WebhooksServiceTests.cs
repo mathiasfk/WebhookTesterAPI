@@ -4,7 +4,7 @@ using WebhookTester.Core.Entities;
 using WebhookTester.Core.Interfaces;
 using WebhookTester.Core.Services;
 
-namespace WebhookTester.Core.Tests
+namespace WebhookTester.Core.Tests.Services
 {
     [TestClass]
     public class WebhooksServiceTests
@@ -57,7 +57,7 @@ namespace WebhookTester.Core.Tests
         {
             // Arrange
             var token = Guid.NewGuid();
-            var webhooks = new List<Webhook> {};
+            var webhooks = new List<Webhook> { };
             _repository.GetByTokenAsync(token).Returns(webhooks);
 
             // Act
@@ -129,7 +129,7 @@ namespace WebhookTester.Core.Tests
             // Arrange
             var token = Guid.NewGuid();
             var webhookId = Guid.NewGuid();
-            var requests = new List<WebhookRequest> {};
+            var requests = new List<WebhookRequest> { };
             var webhook = new Webhook { Id = webhookId, OwnerToken = token, Requests = requests };
             _repository.GetByIdAsync(webhookId).Returns(webhook);
 
