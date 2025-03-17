@@ -11,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Database setup
 builder.Services.AddDbContext<WebhookTesterDbContext>(options =>
-    options.UseSqlite("Data Source=../WebhookTester.Infrastructure/webhooks.db"));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Dependency injection
 builder.Services.AddControllers();
