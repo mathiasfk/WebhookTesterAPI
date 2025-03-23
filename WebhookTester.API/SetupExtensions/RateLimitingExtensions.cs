@@ -42,8 +42,11 @@ namespace WebhookTester.API.SetupExtensions
 
                 options.AddPolicy("AuthenticatedRateLimit", context =>
                 {
+                    var authorization = context.Request.Headers.Authorization.ToString();
+                    var partitionKey = string.IsNullOrEmpty(authorization) ? context.Request.Headers.Host.ToString() : authorization;
+
                     return RateLimitPartition.GetFixedWindowLimiter(
-                            partitionKey: context.Request.Headers.Authorization.ToString() ?? context.Request.Headers.Host.ToString(),
+                            partitionKey: partitionKey,
                             factory: partition => new FixedWindowRateLimiterOptions
                             {
                                 AutoReplenishment = true,
