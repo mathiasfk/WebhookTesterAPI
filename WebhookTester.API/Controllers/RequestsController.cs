@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using WebhookTester.Core.Entities;
 using WebhookTester.Core.Interfaces;
 
@@ -10,6 +11,7 @@ namespace WebhookTester.API.Controllers
     /// <param name="service"></param>
     [ApiController]
     [Route("/")]
+    [EnableRateLimiting("PublicRequestsRateLimit")]
     public class RequestsController(IWebhookService service) : ControllerBase
     {
         /// <summary>

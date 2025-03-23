@@ -17,16 +17,32 @@ namespace WebhookTester.API.SetupExtensions
             services.AddRateLimiter(options =>
             {
                 options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-                options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
-                    RateLimitPartition.GetFixedWindowLimiter(
-                        partitionKey: httpContext.User.Identity?.Name ?? httpContext.Request.Headers.Host.ToString(),
-                        factory: partition => new FixedWindowRateLimiterOptions
-                        {
-                            AutoReplenishment = true,
-                            PermitLimit = 100,
-                            QueueLimit = 0,
-                            Window = TimeSpan.FromMinutes(1)
-                        }));
+
+                options.AddPolicy("PublicRequestsRateLimit", context =>
+                {
+                    return RateLimitPartition.GetFixedWindowLimiter(
+                            partitionKey: context.Request.Headers.Host.ToString(),
+                            factory: partition => new FixedWindowRateLimiterOptions
+                            {
+                                AutoReplenishment = true,
+                                PermitLimit = 500,
+                                QueueLimit = 0,
+                                Window = TimeSpan.FromMinutes(1)
+                            });
+                });
+
+                options.AddPolicy("AuthenticatedRateLimit", context =>
+                {
+                    return RateLimitPartition.GetFixedWindowLimiter(
+                            partitionKey: context.Request.Headers.Authorization.ToString() ?? context.Request.Headers.Host.ToString(),
+                            factory: partition => new FixedWindowRateLimiterOptions
+                            {
+                                AutoReplenishment = true,
+                                PermitLimit = 50,
+                                QueueLimit = 0,
+                                Window = TimeSpan.FromMinutes(1)
+                            });
+                });
             });
 
             return services;

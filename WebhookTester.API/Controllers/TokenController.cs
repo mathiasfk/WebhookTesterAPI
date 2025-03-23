@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using WebhookTester.Core.Interfaces;
 using static WebhookTester.API.Utils.StatusCodeUtils;
 
@@ -10,6 +11,7 @@ namespace WebhookTester.API.Controllers
     /// <param name="service"></param>
     [ApiController]
     [Route("[controller]")]
+    [EnableRateLimiting("AuthenticatedRateLimit")]
     public class TokenController(ITokenService service) : ControllerBase
     {
         /// <summary>
