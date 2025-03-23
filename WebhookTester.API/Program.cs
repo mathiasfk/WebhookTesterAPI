@@ -4,7 +4,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 const string corsPolicy = "sample-client";
 
-builder.Services.AddCustomRateLimiting()
+builder.Services.AddCustomRateLimiting(builder.Configuration)
                 .AddCustomDatabase(builder.Configuration)
                 .AddCustomServices()
                 .AddCustomSwagger()

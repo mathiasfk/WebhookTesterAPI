@@ -11,9 +11,18 @@ namespace WebhookTester.API.SetupExtensions
         /// Adds rate limiting to the application.
         /// </summary>
         /// <param name="services"></param>
+        /// <param name="configuration"></param>
         /// <returns></returns>
-        public static IServiceCollection AddCustomRateLimiting(this IServiceCollection services)
+        public static IServiceCollection AddCustomRateLimiting(this IServiceCollection services, IConfiguration configuration)
         {
+            var publicRateLimitOptions = configuration.GetSection("RateLimiting:PublicRequests").Get<RateLimitOptions>();
+            var authenticatedRateLimitOptions = configuration.GetSection("RateLimiting:AuthenticatedRequests").Get<RateLimitOptions>();
+
+            if (publicRateLimitOptions == null || authenticatedRateLimitOptions == null)
+            {
+                throw new InvalidOperationException("Rate limit options are not configured properly.");
+            }
+
             services.AddRateLimiter(options =>
             {
                 options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -25,9 +34,9 @@ namespace WebhookTester.API.SetupExtensions
                             factory: partition => new FixedWindowRateLimiterOptions
                             {
                                 AutoReplenishment = true,
-                                PermitLimit = 500,
+                                PermitLimit = publicRateLimitOptions.PermitLimit,
                                 QueueLimit = 0,
-                                Window = TimeSpan.FromMinutes(1)
+                                Window = publicRateLimitOptions.Window
                             });
                 });
 
@@ -38,14 +47,29 @@ namespace WebhookTester.API.SetupExtensions
                             factory: partition => new FixedWindowRateLimiterOptions
                             {
                                 AutoReplenishment = true,
-                                PermitLimit = 50,
+                                PermitLimit = authenticatedRateLimitOptions.PermitLimit,
                                 QueueLimit = 0,
-                                Window = TimeSpan.FromMinutes(1)
+                                Window = authenticatedRateLimitOptions.Window
                             });
                 });
             });
 
             return services;
         }
+    }
+
+    /// <summary>
+    /// Rate limit options.
+    /// </summary>
+    public class RateLimitOptions
+    {
+        /// <summary>
+        /// The number of requests allowed in the specified window.
+        /// </summary>
+        public int PermitLimit { get; set; }
+        /// <summary>
+        /// The time window for the rate limit.
+        /// </summary>
+        public TimeSpan Window { get; set; }
     }
 }

@@ -404,3 +404,6 @@ FodyWeavers.xsd
 *.db-shm
 *.db-wal
 **/Migrations/*
+
+# Local configurations
+/WebhookTester.API/appsettings.Development.json
