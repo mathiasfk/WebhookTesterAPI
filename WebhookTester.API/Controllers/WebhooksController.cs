@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Text.Json;
 using WebhookTester.API.ActionFilters;
 using WebhookTester.Core.Common;
@@ -15,6 +16,7 @@ namespace WebhookTester.API.Controllers
     /// <param name="sseService"></param>
     [ApiController]
     [Route("[controller]")]
+    [EnableRateLimiting("AuthenticatedRateLimit")]
     public class WebhooksController(
         IWebhookService webhookService,
         IConfiguration configuration,
