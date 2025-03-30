@@ -1,6 +1,7 @@
 using WebhookTester.API.SetupExtensions;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddEnvironmentVariables();
 
 const string corsPolicy = "sample-client";
 
