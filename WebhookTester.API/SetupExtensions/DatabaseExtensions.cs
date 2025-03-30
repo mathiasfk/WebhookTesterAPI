@@ -23,5 +23,3 @@ namespace WebhookTester.API.SetupExtensions
         }
     }
 }
-
-

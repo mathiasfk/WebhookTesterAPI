@@ -9,16 +9,19 @@
         /// Adds CORS to the application.
         /// </summary>
         /// <param name="services"></param>
+        /// <param name="configuration"></param>
         /// <param name="policyName"></param>
         /// <returns></returns>
-        public static IServiceCollection AddCustomCors(this IServiceCollection services, string policyName)
+        public static IServiceCollection AddCustomCors(this IServiceCollection services, IConfiguration configuration, string policyName)
         {
+            var allowedOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+
             services.AddCors(options =>
             {
                 options.AddPolicy(policyName,
                     builder =>
                     {
-                        builder.AllowAnyOrigin()
+                        builder.WithOrigins(allowedOrigins)
                                .AllowAnyMethod()
                                .AllowAnyHeader();
                     });
@@ -28,5 +31,3 @@
         }
     }
 }
-
-

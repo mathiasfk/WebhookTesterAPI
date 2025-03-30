@@ -406,4 +406,4 @@ FodyWeavers.xsd
 **/Migrations/*
 
 # Local configurations
-/WebhookTester.API/appsettings.Development.json
+/WebhookTester.API/appsettings.*.json
