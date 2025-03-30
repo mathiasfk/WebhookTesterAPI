@@ -10,10 +10,13 @@ namespace WebhookTester.Infrastructure
     {
         public WebhookTesterDbContext CreateDbContext(string[] args)
         {
+            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
+            var appsettings = $"appsettings.{environment}.json";
+
             var basePath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "WebhookTester.API");
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(basePath)
-                .AddJsonFile("appsettings.json")
+                .AddJsonFile(appsettings)
                 .Build();
 
             var connectionString = configuration.GetConnectionString("DefaultConnection");
