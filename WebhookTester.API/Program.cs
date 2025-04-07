@@ -14,8 +14,6 @@ builder.Services.AddCustomRateLimiting(builder.Configuration)
                 .AddControllers();
 
 var app = builder.Build();
-app.MapControllers();
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -30,5 +28,6 @@ app.UseHttpsRedirection();
 app.UseCors(corsPolicy);
 app.UseAuthorization();
 app.UseRateLimiter();
+app.MapControllers();
 
 await app.RunAsync();
