@@ -15,6 +15,8 @@
         public static IServiceCollection AddCustomCors(this IServiceCollection services, IConfiguration configuration, string policyName)
         {
             var allowedOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+            Console.WriteLine("Allowed Origins: " + string.Join(", ", allowedOrigins));
+
 
             services.AddCors(options =>
             {
