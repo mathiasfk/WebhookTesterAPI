@@ -407,3 +407,6 @@ FodyWeavers.xsd
 
 # Local configurations
 /WebhookTester.API/appsettings.*.json
+
+# SQL migrations
+*.sql
